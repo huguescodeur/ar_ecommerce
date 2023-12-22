@@ -1,10 +1,13 @@
 // ignore_for_file: avoid_print
 
+import 'package:ar_ecommerce/features/shop_ar/domain_layer/usescases/auth_domain.dart';
 import 'package:ar_ecommerce/features/shop_ar/domain_layer/usescases/categrorie_produit.dart';
 import 'package:ar_ecommerce/features/shop_ar/domain_layer/usescases/collection.dart';
+import 'package:ar_ecommerce/features/shop_ar/domain_layer/usescases/get_user_info/get_user_info.dart';
 import 'package:ar_ecommerce/features/shop_ar/domain_layer/usescases/new_arrival.dart';
 import 'package:ar_ecommerce/features/shop_ar/presentation_layer/utils/color_screen.dart';
 import 'package:ar_ecommerce/features/shop_ar/presentation_layer/widgets/home_widgets/arrival_card.dart';
+import 'package:ar_ecommerce/features/shop_ar/presentation_layer/widgets/home_widgets/drawer_widget_home.dart';
 import 'package:ar_ecommerce/features/shop_ar/presentation_layer/widgets/home_widgets/home_collection_widget.dart';
 import 'package:ar_ecommerce/features/shop_ar/presentation_layer/widgets/home_widgets/search_container_home.dart';
 import 'package:flutter/material.dart';
@@ -120,19 +123,26 @@ class _HomeScreenState extends State<HomeScreen> {
   //   print(selectedCategory.name);
   // }
 
+  AuthServices authServices = AuthServices();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: secondaryColor,
+      drawer: drawerWidget(context: context),
       appBar: AppBar(
         backgroundColor: secondaryColor,
         iconTheme: const IconThemeData(color: whiteColor),
-        leading: IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.menu,
-              size: 45,
-            )),
+        leading: Builder(
+          builder: (context) => IconButton(
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+              icon: const Icon(
+                Icons.menu,
+                size: 45,
+              )),
+        ),
         actions: [
           IconButton(
             onPressed: () {},

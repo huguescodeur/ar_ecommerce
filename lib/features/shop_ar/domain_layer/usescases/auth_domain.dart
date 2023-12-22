@@ -2,7 +2,9 @@
 
 import 'dart:convert';
 
-import 'package:ar_ecommerce/features/shop_ar/presentation_layer/screens/verify_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:ar_ecommerce/features/shop_ar/presentation_layer/screens/auth_screens/verify_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -16,35 +18,55 @@ class AuthServices {
       {required String email,
       required String password,
       required BuildContext context}) async {
-    final url = Uri.parse('http://192.168.0.124:5000/login');
+    final url = Uri.parse('http://10.91.227.20:5000/login');
     try {
+      if (email.isEmpty || password.isEmpty) {
+        // Gérer le cas où l'e-mail ou le mot de passe est vide
+        throw Exception("L'e-mail ou le mot de passe est vide");
+      }
+
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
       );
 
+      // print('Response status: ${response.statusCode}');
+      // print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
-        Map<String, dynamic> responseData = json.decode(response.body);
-        String successMessage = responseData["message"];
+        // AuthManager.storeCookies(response);
+        // ? Activer la persistance de connection
         AuthManager.setLoggedIn(true);
+
+        Map<String, dynamic> responseData = json.decode(response.body);
+        String? accessToken = responseData['access_token'];
+
+        // print('Decoded response: $responseData');
+
+        // ? stockons le jetons d'accès dans les préférences partagées
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('accessToken', accessToken!);
+
+        print('Stored access token: ${prefs.getString('accessToken')}');
+        // String successMessage = responseData["message"];
         Navigator.pushReplacementNamed(context, '/main');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: Colors.green,
-            content: Text(successMessage),
+            content: Text("Vous êtes connecté"),
             duration: const Duration(seconds: 3),
           ),
         );
         return responseData;
       } else if (response.statusCode == 401) {
         Map<String, dynamic> responseData = json.decode(response.body);
-        String failedMessage = responseData["message"];
+        // String failedMessage = responseData["message"];
         AuthManager.setLoggedIn(false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: Colors.red,
-            content: Text(failedMessage),
+            content: Text("Identifiant incorrect"),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -75,7 +97,7 @@ class AuthServices {
       required String email,
       required String password,
       required BuildContext context}) async {
-    final url = Uri.parse('http://192.168.0.124:5000/register');
+    final url = Uri.parse('http://10.91.227.20:5000/register');
     final response = await http.post(
       url,
       headers: {
@@ -139,7 +161,7 @@ class AuthServices {
       {required String email,
       required String enteredCode,
       required BuildContext context}) async {
-    final url = Uri.parse('http://192.168.0.124:5000/verify-code');
+    final url = Uri.parse('http://10.91.227.20:5000/verify-code');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -222,5 +244,26 @@ class AuthServices {
 
     // Mettez à jour l'état de connexion dans SharedPreferences
     AuthManager.setLoggedIn(false);
+  }
+
+  // ? User Logout
+  logoutUser(BuildContext context) async {
+    // Effacer le jeton d'accès de SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove('accessToken');
+
+    // Mettre à jour l'état de l'application
+    AuthManager.setLoggedIn(false);
+
+    // Rediriger l'utilisateur vers la page de connexion
+    Navigator.pushReplacementNamed(context, '/login');
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.green,
+        content: Text('Déconnexion réussie'),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 }

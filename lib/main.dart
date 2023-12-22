@@ -6,7 +6,7 @@ import 'package:ar_ecommerce/features/shop_ar/presentation_layer/screens/home/ho
 import 'package:ar_ecommerce/features/shop_ar/presentation_layer/screens/home/main_screen.dart';
 import 'package:ar_ecommerce/features/shop_ar/presentation_layer/screens/home/profile_screen.dart';
 import 'package:ar_ecommerce/features/shop_ar/presentation_layer/screens/home/shop_screen.dart';
-import 'package:ar_ecommerce/features/shop_ar/presentation_layer/screens/verify_screen.dart';
+import 'package:ar_ecommerce/features/shop_ar/presentation_layer/screens/auth_screens/verify_screen.dart';
 import 'package:ar_ecommerce/firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
