@@ -18,7 +18,7 @@ class AuthServices {
       {required String email,
       required String password,
       required BuildContext context}) async {
-    final url = Uri.parse('http://10.91.227.20:5000/login');
+    final url = Uri.parse('http://10.0.2.2:5000/login');
     try {
       if (email.isEmpty || password.isEmpty) {
         // Gérer le cas où l'e-mail ou le mot de passe est vide
@@ -31,20 +31,19 @@ class AuthServices {
         body: jsonEncode({'email': email, 'password': password}),
       );
 
-      // print('Response status: ${response.statusCode}');
-      // print('Response body: ${response.body}');
+      // Vérifiez si la réponse contient un cookie
+      String? rawCookie = response.headers['set-cookie'];
+      if (rawCookie != null) {
+        // Stockez le cookie dans les préférences partagées
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('accessCookie', rawCookie);
+      }
 
       if (response.statusCode == 200) {
-        // AuthManager.storeCookies(response);
-        // ? Activer la persistance de connection
-        AuthManager.setLoggedIn(true);
-
         Map<String, dynamic> responseData = json.decode(response.body);
         String? accessToken = responseData['access_token'];
 
-        // print('Decoded response: $responseData');
-
-        // ? stockons le jetons d'accès dans les préférences partagées
+        // Stockez le jeton d'accès dans les préférences partagées
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('accessToken', accessToken!);
 
@@ -62,7 +61,6 @@ class AuthServices {
       } else if (response.statusCode == 401) {
         Map<String, dynamic> responseData = json.decode(response.body);
         // String failedMessage = responseData["message"];
-        AuthManager.setLoggedIn(false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: Colors.red,
@@ -72,11 +70,9 @@ class AuthServices {
         );
         return responseData;
       } else {
-        AuthManager.setLoggedIn(false);
         throw Exception('Erreur de connexion: ${response.statusCode}');
       }
     } catch (e) {
-      AuthManager.setLoggedIn(false);
       print('Erreur lors de la requête : ${e.toString()}');
       // Traitez l'erreur en conséquence, par exemple, affichez un message d'erreur générique
       ScaffoldMessenger.of(context).showSnackBar(
@@ -91,13 +87,91 @@ class AuthServices {
     }
   }
 
+  // // ? Méthode Login
+  // Future<Map<String, dynamic>> loginUser(
+  //     {required String email,
+  //     required String password,
+  //     required BuildContext context}) async {
+  //   final url = Uri.parse('http://192.168.0.124:5000/login');
+  //   try {
+  //     if (email.isEmpty || password.isEmpty) {
+  //       // Gérer le cas où l'e-mail ou le mot de passe est vide
+  //       throw Exception("L'e-mail ou le mot de passe est vide");
+  //     }
+
+  //     final response = await http.post(
+  //       url,
+  //       headers: {'Content-Type': 'application/json'},
+  //       body: jsonEncode({'email': email, 'password': password}),
+  //     );
+
+  //     // print('Response status: ${response.statusCode}');
+  //     // print('Response body: ${response.body}');
+
+  //     if (response.statusCode == 200) {
+  //       // AuthManager.storeCookies(response);
+  //       // ? Activer la persistance de connection
+  //       AuthManager.setLoggedIn(true);
+
+  //       Map<String, dynamic> responseData = json.decode(response.body);
+  //       String? accessToken = responseData['access_token'];
+
+  //       // print('Decoded response: $responseData');
+
+  //       // ? stockons le jetons d'accès dans les préférences partagées
+  //       SharedPreferences prefs = await SharedPreferences.getInstance();
+  //       await prefs.setString('accessToken', accessToken!);
+
+  //       print('Stored access token: ${prefs.getString('accessToken')}');
+  //       // String successMessage = responseData["message"];
+  //       Navigator.pushReplacementNamed(context, '/main');
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           backgroundColor: Colors.green,
+  //           content: Text("Vous êtes connecté"),
+  //           duration: const Duration(seconds: 3),
+  //         ),
+  //       );
+  //       return responseData;
+  //     } else if (response.statusCode == 401) {
+  //       Map<String, dynamic> responseData = json.decode(response.body);
+  //       // String failedMessage = responseData["message"];
+  //       AuthManager.setLoggedIn(false);
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           backgroundColor: Colors.red,
+  //           content: Text("Identifiant incorrect"),
+  //           duration: const Duration(seconds: 3),
+  //         ),
+  //       );
+  //       return responseData;
+  //     } else {
+  //       AuthManager.setLoggedIn(false);
+  //       throw Exception('Erreur de connexion: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     AuthManager.setLoggedIn(false);
+  //     print('Erreur lors de la requête : ${e.toString()}');
+  //     // Traitez l'erreur en conséquence, par exemple, affichez un message d'erreur générique
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         backgroundColor: Colors.red,
+  //         content: Text(
+  //             'Erreur lors de la requête. Veuillez réessayer. ${e.toString()}'),
+  //         duration: const Duration(seconds: 3),
+  //       ),
+  //     );
+  //     return {};
+  //   }
+  // }
+
   // ? Méthode Register
   Future<void> registerUser(
       {required String username,
       required String email,
       required String password,
       required BuildContext context}) async {
-    final url = Uri.parse('http://10.91.227.20:5000/register');
+    final url = Uri.parse('http://10.0.2.2:5000/register');
     final response = await http.post(
       url,
       headers: {
@@ -116,19 +190,6 @@ class AuthServices {
       Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => VerifyCode(),
       ));
-      // Navigator.pushReplacementNamed(context, '/verify');
-
-      // AuthManager.setLoggedIn(true);
-
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(
-      //     backgroundColor: Colors.green,
-      //     content: Text(successMessage),
-      //     duration: const Duration(seconds: 2),
-      //   ),
-      // );
-      // Rediriger l'utilisateur vers la page d'accueil
-      // Navigator.pushReplacementNamed(context, '/home');
     } else if (response.statusCode == 409) {
       // L'e-mail existe déjà, afficher un message d'erreur
       Map<String, dynamic> responseData = json.decode(response.body);
@@ -157,33 +218,80 @@ class AuthServices {
   }
 
   // ? Méthode Verify Code
+  // Future<void> verifyCode(
+  //     {required String email,
+  //     required String enteredCode,
+  //     required BuildContext context}) async {
+  //   final url = Uri.parse('http://10.92.35.26:5000/verify-code');
+  //   final response = await http.post(
+  //     url,
+  //     headers: {'Content-Type': 'application/json'},
+  //     body: jsonEncode({'email': email, 'code': enteredCode}),
+  //   );
+
+  //   print(enteredCode);
+
+  //   if (response.statusCode == 200) {
+  //     Map<String, dynamic> responseData = json.decode(response.body);
+  //     String successMessage = responseData['message'];
+  //     print(successMessage);
+  //     AuthManager.setLoggedIn(true);
+  //     Navigator.pushReplacementNamed(context, '/main');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         backgroundColor: Colors.green,
+  //         content: Text(successMessage),
+  //         duration: const Duration(seconds: 2),
+  //       ),
+  //     );
+  //     // Naviguez vers l'écran suivant après la vérification réussie
+  //   } else {
+  //     // Affichez un message d'erreur à l'utilisateur en cas d'échec de la vérification
+  //     print("Erreur lors de la vérification du code: ${response.body}");
+  //     Map<String, dynamic> responseData = json.decode(response.body);
+  //     String errorMessage = responseData['error'];
+  //     AuthManager.setLoggedIn(false);
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         backgroundColor: Colors.red,
+  //         content: Text(errorMessage),
+  //         duration: const Duration(seconds: 2),
+  //       ),
+  //     );
+  //   }
+  // }
+
+  // ? Méthode Verify Code Token
   Future<void> verifyCode(
       {required String email,
       required String enteredCode,
       required BuildContext context}) async {
-    final url = Uri.parse('http://10.91.227.20:5000/verify-code');
+    final url = Uri.parse('http://10.0.2.2:5000/verify-code');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'code': enteredCode}),
     );
 
-    print(enteredCode);
-
     if (response.statusCode == 200) {
       Map<String, dynamic> responseData = json.decode(response.body);
-      String successMessage = responseData['message'];
-      print(successMessage);
+      String? accessToken = responseData['access_token'];
+
+      // Stocker le jeton d'accès dans les préférences partagées
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('accessToken', accessToken!);
+
       AuthManager.setLoggedIn(true);
-      Navigator.pushReplacementNamed(context, '/main');
+      // Navigator.pushReplacementNamed(context, '/main');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.green,
-          content: Text(successMessage),
+          content: Text("Vous êtes connecté"),
           duration: const Duration(seconds: 2),
         ),
       );
-      // Naviguez vers l'écran suivant après la vérification réussie
+      // ? Naviguez vers l'écran suivant après la vérification réussie
+      Navigator.pushReplacementNamed(context, '/main');
     } else {
       // Affichez un message d'erreur à l'utilisateur en cas d'échec de la vérification
       print("Erreur lors de la vérification du code: ${response.body}");

@@ -124,6 +124,7 @@ class _ForgotScreenState extends State<ForgotScreen> {
                     // ? Forgot Boutton
                     AuthSignButtonWidget(
                         // focusNode: sendFocus,
+                        isLoading: false,
                         text: "Send",
                         onTap: googleOut),
                   ],
