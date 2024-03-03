@@ -38,7 +38,7 @@ dependencies:
   http: ^1.1.0
 
 dev_dependencies:
-  # another_carousel_pro: ^1.0.0
+  animated_notch_bottom_bar: ^1.0.1
   carousel_slider: ^4.2.1
   firebase_auth: ^4.15.0
   firebase_core: ^2.24.0
@@ -48,6 +48,8 @@ dev_dependencies:
   gap: ^3.0.1
   google_sign_in: ^6.1.6
   pinput: ^3.0.1
+  readmore: ^2.2.0
+  salomon_bottom_bar: ^3.3.2
   shared_preferences: ^2.2.2
 
 # For information on the generic Dart part of this file, see the

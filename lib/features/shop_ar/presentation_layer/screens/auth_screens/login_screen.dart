@@ -237,6 +237,7 @@ import 'package:ar_ecommerce/features/shop_ar/presentation_layer/screens/auth_sc
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:gap/gap.dart';
 
 import '../../../domain_layer/usescases/auth_domain.dart';
 import '../../widgets/auth_widgets/auth_sign_button_widget.dart';
@@ -258,24 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isValid = false;
   bool isLoading = false;
 
-  late FocusNode emailFocus;
-  late FocusNode passwordFocus;
-  late FocusNode loginButtonFocus;
 
-  @override
-  void initState() {
-    super.initState();
-    emailFocus = FocusNode();
-    passwordFocus = FocusNode();
-    loginButtonFocus = FocusNode();
-  }
-
-  void dispose() {
-    emailFocus.dispose();
-    passwordFocus.dispose();
-    loginButtonFocus.dispose();
-    super.dispose();
-  }
 
   messageToast({required String message}) {
     Fluttertoast.showToast(msg: message, backgroundColor: Colors.red);
@@ -319,6 +303,7 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 15),
           child: Column(
             children: [
+              const Gap(40),
               Container(
                 height: 100,
                 width: double.infinity,
@@ -340,6 +325,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     AuthTextfieldWidget(
+                      keyboardType: TextInputType.emailAddress,
                       controller: emailController,
                       obscureText: false,
                       labelText: "Email",
@@ -350,6 +336,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       height: 10,
                     ),
                     AuthTextfieldWidget(
+                      keyboardType: TextInputType.text,
                       controller: passwordController,
                       obscureText: true,
                       labelText: "Password",

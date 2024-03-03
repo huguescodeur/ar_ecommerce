@@ -1,5 +1,9 @@
+// ignore_for_file: avoid_print
+
 import 'package:ar_ecommerce/features/shop_ar/domain_layer/usescases/auth_domain.dart';
+import 'package:ar_ecommerce/features/shop_ar/presentation_layer/screens/home/bag_screen.dart';
 import 'package:ar_ecommerce/features/shop_ar/presentation_layer/utils/color_screen.dart';
+import 'package:ar_ecommerce/features/shop_ar/presentation_layer/screens/product/list_collection.dart';
 import 'package:flutter/material.dart';
 
 Widget drawerWidget({required BuildContext context}) {
@@ -8,7 +12,10 @@ Widget drawerWidget({required BuildContext context}) {
     backgroundColor: secondaryColor,
     child: Column(
       children: [
-        DrawerHeader(
+        const DrawerHeader(
+          decoration: BoxDecoration(
+            color: secondaryColor,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -23,17 +30,14 @@ Widget drawerWidget({required BuildContext context}) {
               ),
             ],
           ),
-          decoration: BoxDecoration(
-            color: secondaryColor,
-          ),
         ),
         ListTile(
-          leading: Icon(
+          leading: const Icon(
             Icons.home,
             color: Colors.white,
             size: 32,
           ),
-          title: Text(
+          title: const Text(
             'Home',
             style: TextStyle(color: Colors.white, fontSize: 24),
           ),
@@ -42,24 +46,40 @@ Widget drawerWidget({required BuildContext context}) {
           },
         ),
         ListTile(
-          leading: Icon(
-            Icons.home,
+          leading: const Icon(
+            Icons.shopping_bag_outlined,
             color: Colors.white,
             size: 32,
           ),
-          title: Text(
+          title: const Text(
+            'Collections',
+            style: TextStyle(color: Colors.white, fontSize: 24),
+          ),
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => const ListCollection(),
+            ));
+          },
+        ),
+        ListTile(
+          leading: const Icon(
+            Icons.info_outline,
+            color: Colors.white,
+            size: 32,
+          ),
+          title: const Text(
             'About',
             style: TextStyle(color: Colors.white, fontSize: 24),
           ),
           onTap: () {},
         ),
         ListTile(
-          leading: Icon(
-            Icons.home,
+          leading: const Icon(
+            Icons.logout,
             color: Colors.white,
             size: 32,
           ),
-          title: Text(
+          title: const Text(
             'Logout',
             style: TextStyle(color: Colors.white, fontSize: 24),
           ),

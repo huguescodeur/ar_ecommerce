@@ -18,7 +18,7 @@ class AuthServices {
       {required String email,
       required String password,
       required BuildContext context}) async {
-    final url = Uri.parse('http://10.0.2.2:5000/login');
+    final url = Uri.parse('http://192.168.0.124:5000/login');
     try {
       if (email.isEmpty || password.isEmpty) {
         // Gérer le cas où l'e-mail ou le mot de passe est vide
@@ -57,6 +57,7 @@ class AuthServices {
             duration: const Duration(seconds: 3),
           ),
         );
+        AuthManager.setLoggedIn(true);
         return responseData;
       } else if (response.statusCode == 401) {
         Map<String, dynamic> responseData = json.decode(response.body);
@@ -68,8 +69,10 @@ class AuthServices {
             duration: const Duration(seconds: 3),
           ),
         );
+        AuthManager.setLoggedIn(false);
         return responseData;
       } else {
+        AuthManager.setLoggedIn(false);
         throw Exception('Erreur de connexion: ${response.statusCode}');
       }
     } catch (e) {
@@ -83,11 +86,180 @@ class AuthServices {
           duration: const Duration(seconds: 3),
         ),
       );
+      AuthManager.setLoggedIn(false);
       return {};
     }
   }
 
-  // // ? Méthode Login
+  // ? Méthode Register
+  Future<void> registerUser(
+      {required String username,
+      required String email,
+      required String password,
+      required BuildContext context}) async {
+    final url = Uri.parse('http://192.168.0.124:5000/register');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(
+          {'username': username, 'email': email, 'password': password}),
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseData = json.decode(response.body);
+      String successMessage = responseData['message'];
+      // La requête a réussi, vous pouvez traiter la réponse si nécessaire
+      print('Inscription réussie!');
+      print(successMessage);
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => VerifyCode(),
+      ));
+    } else if (response.statusCode == 409) {
+      // L'e-mail existe déjà, afficher un message d'erreur
+      Map<String, dynamic> responseData = json.decode(response.body);
+      String errorMessage = responseData['error'];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(errorMessage),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      // La requête a échoué, vous pouvez afficher un message d'erreur
+      print("Erreur lors de l'inscription: ${response.body}");
+      Map<String, dynamic> responseData = json.decode(response.body);
+      String errorMessage = responseData['error'];
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(errorMessage),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  // ? Méthode Verify Code Token
+  Future<void> verifyCode(
+      {required String email,
+      required String enteredCode,
+      required BuildContext context}) async {
+    final url = Uri.parse('http://192.168.0.124:5000/verify-code');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'code': enteredCode}),
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseData = json.decode(response.body);
+      String? accessToken = responseData['access_token'];
+
+      // Stocker le jeton d'accès dans les préférences partagées
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('accessToken', accessToken!);
+
+      Navigator.pushReplacementNamed(context, '/main');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.green,
+          content: Text("Vous êtes connecté"),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      // ? Naviguez vers l'écran suivant après la vérification réussie
+      // Navigator.pushReplacementNamed(context, '/main');
+      AuthManager.setLoggedIn(true);
+    } else {
+      // Affichez un message d'erreur à l'utilisateur en cas d'échec de la vérification
+      print("Erreur lors de la vérification du code: ${response.body}");
+      Map<String, dynamic> responseData = json.decode(response.body);
+      String errorMessage = responseData['error'];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(errorMessage),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      AuthManager.setLoggedIn(false);
+    }
+  }
+
+  // ? Google Sign In
+// * Google login
+  Future<UserCredential?> signInWithGoogle() async {
+    try {
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+      if (googleUser == null) {
+        // L'utilisateur a annulé la connexion Google
+        return null;
+      }
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser.authentication;
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth?.accessToken,
+        idToken: googleAuth?.idToken,
+      );
+
+      // Once signed in, return the UserCredential
+      final userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+      // Enregistrez l'état de connexion dans SharedPreferences
+      AuthManager.setLoggedIn(true);
+
+      return userCredential;
+    } catch (e) {
+      print("Erreur lors de la connexion avec Google : $e");
+      AuthManager.setLoggedIn(false);
+      return null;
+    }
+  }
+
+  // ? Google Logout
+  Future<void> signOutWithGoogle() async {
+    await GoogleSignIn().signOut(); // Déconnexion avec Firebase
+    await FirebaseAuth.instance.signOut();
+    print("Logout");
+
+    // Mettez à jour l'état de connexion dans SharedPreferences
+    AuthManager.setLoggedIn(false);
+  }
+
+  // ? User Logout
+  logoutUser(BuildContext context) async {
+    // Effacer le jeton d'accès de SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove('accessToken');
+
+    // Mettre à jour l'état de l'application
+
+    // Rediriger l'utilisateur vers la page de connexion
+    Navigator.pushReplacementNamed(context, '/login');
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.green,
+        content: Text('Déconnexion réussie'),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+    AuthManager.setLoggedIn(false);
+  }
+}
+
+// // ? Méthode Login
   // Future<Map<String, dynamic>> loginUser(
   //     {required String email,
   //     required String password,
@@ -165,57 +337,6 @@ class AuthServices {
   //   }
   // }
 
-  // ? Méthode Register
-  Future<void> registerUser(
-      {required String username,
-      required String email,
-      required String password,
-      required BuildContext context}) async {
-    final url = Uri.parse('http://10.0.2.2:5000/register');
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(
-          {'username': username, 'email': email, 'password': password}),
-    );
-
-    if (response.statusCode == 200) {
-      Map<String, dynamic> responseData = json.decode(response.body);
-      String successMessage = responseData['message'];
-      // La requête a réussi, vous pouvez traiter la réponse si nécessaire
-      print('Inscription réussie!');
-      print(successMessage);
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => VerifyCode(),
-      ));
-    } else if (response.statusCode == 409) {
-      // L'e-mail existe déjà, afficher un message d'erreur
-      Map<String, dynamic> responseData = json.decode(response.body);
-      String errorMessage = responseData['error'];
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text(errorMessage),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    } else {
-      // La requête a échoué, vous pouvez afficher un message d'erreur
-      print("Erreur lors de l'inscription: ${response.body}");
-      Map<String, dynamic> responseData = json.decode(response.body);
-      String errorMessage = responseData['error'];
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text(errorMessage),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
-  }
 
   // ? Méthode Verify Code
   // Future<void> verifyCode(
@@ -260,118 +381,3 @@ class AuthServices {
   //     );
   //   }
   // }
-
-  // ? Méthode Verify Code Token
-  Future<void> verifyCode(
-      {required String email,
-      required String enteredCode,
-      required BuildContext context}) async {
-    final url = Uri.parse('http://10.0.2.2:5000/verify-code');
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'code': enteredCode}),
-    );
-
-    if (response.statusCode == 200) {
-      Map<String, dynamic> responseData = json.decode(response.body);
-      String? accessToken = responseData['access_token'];
-
-      // Stocker le jeton d'accès dans les préférences partagées
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('accessToken', accessToken!);
-
-      AuthManager.setLoggedIn(true);
-      // Navigator.pushReplacementNamed(context, '/main');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.green,
-          content: Text("Vous êtes connecté"),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-      // ? Naviguez vers l'écran suivant après la vérification réussie
-      Navigator.pushReplacementNamed(context, '/main');
-    } else {
-      // Affichez un message d'erreur à l'utilisateur en cas d'échec de la vérification
-      print("Erreur lors de la vérification du code: ${response.body}");
-      Map<String, dynamic> responseData = json.decode(response.body);
-      String errorMessage = responseData['error'];
-      AuthManager.setLoggedIn(false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text(errorMessage),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
-  // ? Google Sign In
-// * Google login
-  Future<UserCredential?> signInWithGoogle() async {
-    try {
-      // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-
-      if (googleUser == null) {
-        // L'utilisateur a annulé la connexion Google
-        return null;
-      }
-
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser.authentication;
-
-      // Create a new credential
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
-      );
-
-      // Once signed in, return the UserCredential
-      final userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
-
-      // Enregistrez l'état de connexion dans SharedPreferences
-      AuthManager.setLoggedIn(true);
-
-      return userCredential;
-    } catch (e) {
-      print("Erreur lors de la connexion avec Google : $e");
-      return null;
-    }
-  }
-
-  // ? Google Logout
-  Future<void> signOutWithGoogle() async {
-    await GoogleSignIn().signOut(); // Déconnexion avec Firebase
-    await FirebaseAuth.instance.signOut();
-    print("Logout");
-
-    // Mettez à jour l'état de connexion dans SharedPreferences
-    AuthManager.setLoggedIn(false);
-  }
-
-  // ? User Logout
-  logoutUser(BuildContext context) async {
-    // Effacer le jeton d'accès de SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    prefs.remove('accessToken');
-
-    // Mettre à jour l'état de l'application
-    AuthManager.setLoggedIn(false);
-
-    // Rediriger l'utilisateur vers la page de connexion
-    Navigator.pushReplacementNamed(context, '/login');
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.green,
-        content: Text('Déconnexion réussie'),
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-}

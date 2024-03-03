@@ -6,8 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class AuthTextfieldWidget extends ConsumerStatefulWidget {
   final TextEditingController controller;
   bool obscureText;
-  final String labelText;
+  final String? labelText;
   IconData? iconData;
+  final TextInputType keyboardType;
   // final FocusNode? focusNode;
   // final FocusNode? nextFocusNode;
   final VoidCallback? onTap;
@@ -19,11 +20,8 @@ class AuthTextfieldWidget extends ConsumerStatefulWidget {
       required this.labelText,
       this.onTap,
       this.iconData,
-      // required this.focusNode,
-      // required this.nextFocusNode,
-      required this.isPassword
-      // required this.onTap
-      });
+      required this.isPassword,
+      required this.keyboardType});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -38,28 +36,11 @@ class _AuthTextfieldWidgetState extends ConsumerState<AuthTextfieldWidget> {
   void initState() {
     super.initState();
     myController = widget.controller;
-    // _focusNode = widget.focusNode ?? FocusNode();
-    // _focusNode.addListener(_onFocusChange);
-    // _focusNode = FocusNode();
   }
-
-  // @override
-  // void dispose() {
-  //   _focusNode.removeListener(_onFocusChange);
-  //   _focusNode.dispose();
-  //   super.dispose();
-  // }
-
-  // void _onFocusChange() {
-  //   if (!_focusNode.hasFocus) {
-
-  //     FocusManager.instance.primaryFocus?.unfocus();
-  //   }
-  // }
 
   // ? Toggle ObscureText
   void toggleObscureText() {
-    FocusManager.instance.primaryFocus?.unfocus();
+    // FocusManager.instance.primaryFocus?.unfocus();
     if (widget.isPassword) {
       setState(() {
         widget.obscureText = !widget.obscureText;
@@ -68,17 +49,7 @@ class _AuthTextfieldWidgetState extends ConsumerState<AuthTextfieldWidget> {
             : Icons.visibility_outlined;
       });
     }
-
-    // Ajoutez d'autres logiques au besoin pour d'autres types de champs
   }
-  // () {
-  //               ref
-  //                   .read(obscureTextProvider.notifier)
-  //                  .update((state) => !o);
-
-  //                   ref.read(obscureTextProvider).state =
-  //                  !ref.read(obscureTextProvider).state;
-  //             }
 
   @override
   Widget build(BuildContext context) {
@@ -87,11 +58,7 @@ class _AuthTextfieldWidgetState extends ConsumerState<AuthTextfieldWidget> {
         // textAlign: TextAlign.center,
         style: const TextStyle(color: Colors.white, fontSize: 18),
         controller: widget.controller,
-        // focusNode: widget.focusNode,
-        onEditingComplete: () {
-          // ? Déplacer le focus vers le champ de texte suivant
-          // widget.nextFocusNode?.requestFocus();
-        },
+        keyboardType: widget.keyboardType,
         cursorColor: Colors.white,
         obscureText: widget.obscureText,
         decoration: InputDecoration(

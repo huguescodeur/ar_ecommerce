@@ -57,7 +57,7 @@ class VerifyCode extends ConsumerWidget {
           width: double.infinity,
           child: Column(
             children: [
-              const Gap(40),
+              const Gap(60),
               const Text(
                 "Verification",
                 style: TextStyle(
@@ -69,7 +69,7 @@ class VerifyCode extends ConsumerWidget {
               Container(
                 margin: const EdgeInsets.symmetric(vertical: 40),
                 child: const Text(
-                  "Enter the code sent to your email",
+                  "Entrer le code envoyé à votre email",
                   style: TextStyle(
                     color: Colors.grey,
                     fontSize: 18,

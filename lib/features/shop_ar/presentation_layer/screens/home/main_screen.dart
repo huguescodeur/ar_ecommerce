@@ -8,6 +8,7 @@ import 'package:ar_ecommerce/features/shop_ar/presentation_layer/screens/home/pr
 import 'package:ar_ecommerce/features/shop_ar/presentation_layer/screens/home/shop_screen.dart';
 import 'package:ar_ecommerce/features/shop_ar/presentation_layer/utils/color_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -42,6 +43,7 @@ class _MainScreenState extends State<MainScreen> {
 
   // * Type index
   int selectedPage = 0;
+  var _currentIndex = 0;
 
   void onTappedBar(int index) {
     pageController.jumpToPage(index);
@@ -57,7 +59,85 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        bottomNavigationBar: BottomNavigationBar(
+        bottomNavigationBar: SalomonBottomBar(
+          curve: Curves.linear,
+          currentIndex: selectedPage,
+          backgroundColor: secondaryColor,
+          selectedItemColor: primaryColor,
+          unselectedItemColor: greyColor,
+          itemShape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          onTap: onTappedBar,
+          items: [
+            /// Home
+            SalomonBottomBarItem(
+              icon: const Icon(
+                Icons.home,
+                size: 40,
+              ),
+              title: const Text("Home"),
+              // selectedColor: Colors.purple,
+            ),
+
+            /// Likes
+            SalomonBottomBarItem(
+              icon: const Icon(
+                Icons.shopping_cart_outlined,
+                size: 40,
+              ),
+              title: const Text("Shop"),
+              // selectedColor: Colors.pink,
+            ),
+
+            /// Search
+            // SalomonBottomBarItem(
+            //   icon: Icon(
+            //     Icons.shopping_bag_outlined,
+            //     size: 40,
+            //   ),
+            //   title: Text("Bag"),
+            //   // selectedColor: Colors.orange,
+            // ),
+
+            /// Profile
+            SalomonBottomBarItem(
+              icon: const Icon(
+                Icons.favorite_border_outlined,
+                size: 40,
+              ),
+              title: const Text("Likes"),
+              // selectedColor: Colors.teal,
+            ),
+
+            SalomonBottomBarItem(
+              icon: const Icon(
+                Icons.person_2_outlined,
+                size: 40,
+              ),
+              title: const Text("Profil"),
+              // selectedColor: Colors.teal,
+            ),
+          ],
+        ),
+        body: PageView(
+          physics: const NeverScrollableScrollPhysics(),
+          controller: pageController,
+          onPageChanged: (index) {
+            onPageChanged(index);
+          },
+          children: const [
+            HomeScreen(),
+            // HomeScreens(),
+            ShopScreen(),
+            FavoriteScreen(),
+            ProfileScreen(),
+            BagScreen(),
+          ],
+        ));
+  }
+}
+
+/*BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
             backgroundColor: secondaryColor,
             selectedItemColor: primaryColor,
@@ -100,21 +180,4 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 label: "Profile",
               ),
-            ]),
-        body: PageView(
-          physics: const NeverScrollableScrollPhysics(),
-          controller: pageController,
-          onPageChanged: (index) {
-            onPageChanged(index);
-          },
-          children: const [
-            HomeScreen(),
-            // HomeScreens(),
-            ShopScreen(),
-            BagScreen(),
-            FavoriteScreen(),
-            ProfileScreen()
-          ],
-        ));
-  }
-}
+            ]) */

@@ -16,7 +16,7 @@ class UserNotifier extends StateNotifier<Map<String, dynamic>> {
   UserNotifier() : super({});
 
   Future<void> getCurrentUser() async {
-    final url = Uri.parse('http://10.0.2.2:5000/current-user');
+    final url = Uri.parse('http://192.168.0.124:5000/current-user');
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String accessToken = prefs.getString('accessToken') ?? '';

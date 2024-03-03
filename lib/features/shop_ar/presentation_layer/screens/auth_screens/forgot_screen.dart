@@ -56,9 +56,7 @@ class _ForgotScreenState extends State<ForgotScreen> {
           child: Column(
             // mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              const SizedBox(
-                height: 20,
-              ),
+              const Gap(70),
               Container(
                 height: 140,
                 width: double.infinity,
@@ -110,6 +108,7 @@ class _ForgotScreenState extends State<ForgotScreen> {
                       height: 40,
                     ),
                     AuthTextfieldWidget(
+                      keyboardType: TextInputType.emailAddress,
                       controller: emailController,
                       // focusNode: emailFocus,
                       // nextFocusNode: sendFocus,
@@ -123,10 +122,11 @@ class _ForgotScreenState extends State<ForgotScreen> {
 
                     // ? Forgot Boutton
                     AuthSignButtonWidget(
-                        // focusNode: sendFocus,
-                        isLoading: false,
-                        text: "Send",
-                        onTap: googleOut),
+                      // focusNode: sendFocus,
+                      isLoading: false,
+                      text: "Send",
+                      onTap: () => print("Send"),
+                    ),
                   ],
                 ),
               ),

@@ -232,6 +232,7 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:gap/gap.dart';
 
 import '../../../domain_layer/usescases/auth_domain.dart';
 import '../../provider/email_signup_provider.dart';
@@ -306,6 +307,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 15),
           child: Column(
             children: [
+              const Gap(40),
               Container(
                 height: 100,
                 width: double.infinity,
@@ -327,6 +329,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     AuthTextfieldWidget(
+                      keyboardType: TextInputType.name,
                       controller: usernameController,
                       obscureText: false,
                       labelText: "Name",
@@ -337,6 +340,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       height: 10,
                     ),
                     AuthTextfieldWidget(
+                      keyboardType: TextInputType.emailAddress,
                       controller: emailController,
                       obscureText: false,
                       labelText: "Email",
@@ -347,6 +351,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       height: 10,
                     ),
                     AuthTextfieldWidget(
+                      keyboardType: TextInputType.text,
                       controller: passwordController,
                       obscureText: true,
                       labelText: "Password",
